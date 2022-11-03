@@ -9,6 +9,8 @@ import codecs
 import re
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
+import numpy as np
+from termcolor import colored
 
 df = pd.read_excel('cidade_dir.xlsx')
 
@@ -36,52 +38,53 @@ while index < 181:
         divs = soup.find_all("div", class_="py-2")
 
         cidade = divs[0].text.split(",")[0].strip()
-        lula_voto = divs[1].text.split("·")[0].split("Votação")[1].strip()
+        lula_voto = divs[1].text.split("·")[0].split("Votação")[1].strip().replace(".", "")
         lula_pct = divs[1].text.split("·")[1].strip().replace(",", ".").replace("%",'')
-        bolsonaro_voto = divs[2].text.split("·")[0].split("Votação")[1].strip()
+        bolsonaro_voto = divs[2].text.split("·")[0].split("Votação")[1].strip().replace(".", "")
         bolsonaro_pct = divs[2].text.split("·")[1].strip().replace(",", ".").replace("%",'')
-        df.at[index, 'lula_votos_2o'] = lula_voto
-        df.at[index, 'lula_pct_2o'] = lula_pct
-        df.at[index, 'bolsonaro_votos_2o'] = bolsonaro_voto
-        df.at[index, 'bolsonaro_pct_2o'] = bolsonaro_pct
+
+        df.loc[df["website_name"] == cidade, 'lula_votos_2o'] = lula_voto
+        df.loc[df["website_name"] == cidade, 'lula_pct_2o'] = lula_pct
+        df.loc[df["website_name"] == cidade, 'bolsonaro_votos_2o'] = bolsonaro_voto
+        df.loc[df["website_name"] == cidade, 'bolsonaro_pct_2o'] = bolsonaro_pct
 
         arc = BeautifulSoup(legenda.get_attribute("innerHTML"), features="lxml")
         concorrentes_pct = arc.find("h2", class_="text-center").text.split("·")[1].strip().replace(",", ".").replace("%",'')
         grid = arc.find_all("div", class_="legenda-grid")
-        df.at[index, 'concorrentes_pct'] = bolsonaro_pct
+        df.loc[df["website_name"] == cidade, 'concorrentes_pct'] = bolsonaro_pct
 
-        votos_total = svg_arc.text.split("\n")[0]
-        votos_validos = grid[0].find_all("div", class_="font-bold")[0].text.strip()
-        anulados = grid[0].find_all("div", class_="font-bold")[1].text.strip()
-        anulados_sub_judice = grid[0].find_all("div", class_="font-bold")[2].text.strip()
-        df.at[index, 'votos_total'] = votos_total
-        df.at[index, 'votos_validos'] = votos_validos
-        df.at[index, 'anulados'] = anulados
-        df.at[index, 'anulados_sub_judice'] = anulados_sub_judice
+        votos_total = svg_arc.text.split("\n")[0].replace(".", "")
+        votos_validos = grid[0].find_all("div", class_="font-bold")[0].text.strip().replace(".", "")
+        anulados = grid[0].find_all("div", class_="font-bold")[1].text.strip().replace(".", "")
+        anulados_sub_judice = grid[0].find_all("div", class_="font-bold")[2].text.strip().replace(".", "")
+        df.loc[df["website_name"] == cidade, 'votos_total'] = votos_total
+        df.loc[df["website_name"] == cidade, 'votos_validos'] = votos_validos
+        df.loc[df["website_name"] == cidade, 'anulados'] = anulados
+        df.loc[df["website_name"] == cidade, 'anulados_sub_judice'] = anulados_sub_judice
 
-        nulos = grid[1].find_all("div", class_="font-bold")[0].text.split('·')[0].strip()
-        nulos_pct = grid[1].find_all("div", class_="font-bold")[0].text.split('·')[1].strip()
+        nulos = grid[1].find_all("div", class_="font-bold")[0].text.split('·')[0].strip().replace(".", "")
+        nulos_pct = grid[1].find_all("div", class_="font-bold")[0].text.split('·')[1].strip().replace(",", ".").replace("%",'')
 
-        em_branco = grid[1].find_all("div", class_="font-bold")[1].text.strip().split('·')[0].strip()
-        em_branco_pct = grid[1].find_all("div", class_="font-bold")[1].text.strip().split('·')[1].strip()
+        em_branco = grid[1].find_all("div", class_="font-bold")[1].text.strip().split('·')[0].strip().replace(".", "")
+        em_branco_pct = grid[1].find_all("div", class_="font-bold")[1].text.strip().split('·')[1].strip().replace(",", ".").replace("%",'')
 
-        anulados_e_apurados = grid[1].find_all("div", class_="font-bold")[2].text.strip().split('·')[0].strip()
-        anulados_e_apurados_pct = grid[1].find_all("div", class_="font-bold")[2].text.strip().split('·')[1].strip()
+        anulados_e_apurados = grid[1].find_all("div", class_="font-bold")[2].text.strip().split('·')[0].strip().replace(".", "")
+        anulados_e_apurados_pct = grid[1].find_all("div", class_="font-bold")[2].text.strip().split('·')[1].strip().replace(",", ".").replace("%",'')
 
-        df.at[index, 'nulos'] = nulos
-        df.at[index, 'nulos_pct'] = nulos_pct
-        df.at[index, 'em_branco'] = em_branco
-        df.at[index, 'em_branco_pct'] = em_branco_pct
-        df.at[index, 'anulados_e_apurados'] = anulados_e_apurados
-        df.at[index, 'anulados_e_apurados_pct'] = anulados_e_apurados_pct
+        df.loc[df["website_name"] == cidade, 'nulos'] = nulos
+        df.loc[df["website_name"] == cidade, 'nulos_pct'] = nulos_pct
+        df.loc[df["website_name"] == cidade, 'em_branco'] = em_branco
+        df.loc[df["website_name"] == cidade, 'em_branco_pct'] = em_branco_pct
+        df.loc[df["website_name"] == cidade, 'anulados_e_apurados'] = anulados_e_apurados
+        df.loc[df["website_name"] == cidade, 'anulados_e_apurados_pct'] = anulados_e_apurados_pct
 
-        cidade_match = df.at[0, "city_pt"] == cidade
+        # cidade_match = df.loc[df["website_name"] == cidade, "city_pt"] == cidade
 
-        df.at[index, 'name_match'] = cidade_match
+        # df.loc[df["website_name"] == cidade, 'name_match'] = cidade_match
 
-        if pd.isna(df.at[index, "city_loc2"]):
-            df.at[index, 'city_loc2'] = ''
-            df.at[index, 'country_loc2'] = ''
+        if df.loc[df["website_name"] == cidade, "city_loc2"].isnull().bool():
+            df.loc[df["website_name"] == cidade, 'city_loc2'] = ''
+            df.loc[df["website_name"] == cidade, 'country_loc2'] = ''
 
         index += 1
 
@@ -98,7 +101,30 @@ while index < 181:
         )
 
         cidades = driver.find_elements(By.CSS_SELECTOR, "#cdk-overlay-0 .mat-option")
+        flag = df["flag"].loc[df["website_name"] == cidade].values[0]
 
+        if lula_pct > bolsonaro_pct:
+            resultado = colored(' Lula! ', 'white', 'on_red')
+            score = lula_pct
+            votos = lula_voto
+
+        elif lula_pct < bolsonaro_pct:
+            resultado = resultado = colored(" Fuckão :( ", 'white', 'on_blue')
+            score = bolsonaro_pct
+            votos = bolsonaro_voto
+
+        else:
+            if lula_pct == "0.00":
+                resultado = "Nada"
+                score = 0
+                votos = 0
+            else:
+                resultado = "Tie"
+                score = lula_pct
+                votos = lula_voto
+
+
+        print(str(index) + '. ' + cidade + ' ' + flag + '   ' + resultado + ' (' + str(score) + '%, ' + str(votos) + ' votos)')
         if index < len(cidades):
             next_cidade = cidades[index].text
             cidades[index].click()
@@ -112,11 +138,11 @@ while index < 181:
             WebDriverWait(driver, 10).until(
                 EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'virtual-scroller .font-bold.text-3xl'), next_cidade + ', ZZ') #This is a dummy element
             )
-            print(driver.current_url)
+
             val = driver.current_url
-            print(next_cidade + ' ' + val)
+
     finally:
         driver.quit()
 
 with open('data.csv', 'w') as csv_file:
-    df.to_csv(path_or_buf=csv_file)
+    df.to_csv(index=False, path_or_buf=csv_file)
