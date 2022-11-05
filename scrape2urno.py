@@ -214,6 +214,7 @@ while index < 181:
                 bolsonaro_voto = 0
                 lula_pct = 0
                 bolsonaro_pct = 0
+                urno_type = ''
 
                 df = pd.concat([df, pd.Series({
                     'cidade':cidade,
@@ -247,7 +248,8 @@ while index < 181:
                     'city_en':city_en
                 }).to_frame().T], ignore_index = True)
         if secao_index <= secoes_length:
-            if lula_voto == 0:
+            ##revisit for round 1
+            if lula_voto == 0 and bolsonaro_voto == 0:
                 endbit = ' - NADA ❌'
             else:
                 if lula_pct > bolsonaro_pct:
@@ -255,20 +257,20 @@ while index < 181:
                     score = lula_pct
                     votos = lula_voto
                 elif lula_pct < bolsonaro_pct:
-                    resultado = resultado = colored(" Fuckão :( ", 'white', 'on_blue')
+                    resultado = colored(" Fuckão :( ", 'white', 'on_blue')
                     score = bolsonaro_pct
                     votos = bolsonaro_voto
                 else:
-                    resultado = colored("Tie", 'black', 'on_white')
+                    resultado = colored(" Tie ", 'green', 'on_white')
                     score = lula_pct
                     votos = lula_voto
 
-                if dia == 'Manual':
-                    type_emoji = '🗳️'
-                elif dia == 'Não':
-                    type_emoji = '❌'
-                else:
+                if 'eletrônica' in urno_type:
                     type_emoji = '💻'
+                elif 'Apuração' in urno_type:
+                    type_emoji = '🗳️'
+                else:
+                    type_emoji = '❌'
 
 
                 endbit = ' - ' + resultado + ' ' + type_emoji + '  (' + str(round(score*100,2)) + '%, ' + str(votos) + ' votos)'
@@ -286,6 +288,7 @@ while index < 181:
             secoes_length = 1
             driver.quit()
     except Exception as e:
+        secoes_df = pd.read_excel('venues.xlsx', dtype='str')
         print('error -- counter ' + str(counter) + ', index ' + str(index) + ', secao_index ' + str(secao_index) + ' -- ' + cidade)
     finally:
         driver.quit()
